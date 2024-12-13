@@ -1,0 +1,112 @@
+!pip install yfinance
+
+import yfinance as yf
+
+# Crea un objeto Ticker para Tesla
+tesla = yf.Ticker("TSLA")
+
+# Extrae los datos de Tesla
+tesla_data = tesla.history(period="max")
+
+# Restablece el índice
+tesla_data.reset_index(inplace=True)
+
+# Muestra las primeras cinco filas
+print(tesla_data.head())
+
+!pip install requests
+!pip install beautifulsoup4
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+url = 'https://www.macrotrends.net/stocks/charts/TSLA/tesla/revenue'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Encuentra todas las tablas en la página
+tables = soup.find_all('table')
+
+# Buscar la tabla que tiene los datos de Tesla Revenue (ajusta según sea necesario)
+for table in tables:
+    if 'Tesla Quarterly Revenue' in table.text:
+        tesla_revenue_table = table
+        break
+
+# Verificar si la tabla fue encontrada
+if 'tesla_revenue_table' in locals():
+    # Procesar la tabla en un DataFrame
+    tesla_revenue = pd.read_html(str(tesla_revenue_table))[0]
+
+    # Limpieza de los datos
+    tesla_revenue.columns = ['Date', 'Revenue']
+    tesla_revenue['Revenue'] = tesla_revenue['Revenue'].str.replace('$', '').str.replace(',', '')
+    tesla_revenue.dropna(inplace=True)
+
+    # Mostrar las últimas cinco filas
+    print(tesla_revenue.tail())
+else:
+    print("La tabla de ingresos no fue encontrada.")
+
+import yfinance as yf
+
+# Crea un objeto de ticker para GameStop
+gme = yf.Ticker("GME")
+
+# Obtén los datos históricos de GME
+gme_data = gme.history(period="max")
+
+# Resetea el índice y muestra las primeras cinco filas
+gme_data.reset_index(inplace=True)
+gme_data.head()
+
+
+# Verificar si hay tablas
+tables = soup.find_all('table')
+print(f'Total tables found: {len(tables)}')
+
+# Si se encuentra una tabla, procesarla
+if len(tables) > 0:
+    gme_revenue_table = tables[0]  # Ajustar el índice si la tabla correcta no es la primera
+    gme_revenue = pd.read_html(str(gme_revenue_table))[0]
+
+    # Limpieza y formato
+    gme_revenue.columns = ['Date', 'Revenue']
+    gme_revenue['Revenue'] = gme_revenue['Revenue'].str.replace(',', '').str.replace('$', '')
+    gme_revenue.dropna(inplace=True)
+
+    # Mostrar últimas cinco filas
+    print(gme_revenue.tail())
+else:
+    print("No tables found on the page.")
+
+
+!pip install matplotlib
+
+import matplotlib.pyplot as plt
+
+def make_graph(stock_data, revenue_data, title):
+    fig, ax1 = plt.subplots()
+
+    # Plot stock price
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Stock Price', color='tab:blue')
+    ax1.plot(stock_data['Date'], stock_data['Close'], color='tab:blue', label='Stock Price')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+    # Create a second y-axis for revenue
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Revenue', color='tab:orange')
+    ax2.plot(revenue_data['Date'], revenue_data['Revenue'], color='tab:orange', label='Revenue')
+    ax2.tick_params(axis='y', labelcolor='tab:orange')
+
+    plt.title(title)
+    plt.show()
+
+# Ensure tesla_data and tesla_revenue are defined
+make_graph(tesla_data, tesla_revenue, "Tesla Stock Price vs Revenue")
+
+# Make sure you have GameStop stock data and revenue data defined
+make_graph(gme_data, gme_revenue, "GameStop Stock Price vs Revenue")
+
